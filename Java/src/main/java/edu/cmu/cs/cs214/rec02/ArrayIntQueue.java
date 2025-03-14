@@ -2,107 +2,70 @@ package edu.cmu.cs.cs214.rec02;
 
 import java.util.Arrays;
 
-/**
- * A resizable-array implementation of the {@link IntQueue} interface. The head of
- * the queue starts out at the head of the array, allowing the queue to grow and
- * shrink in constant time.
- *
- * TODO: This implementation contains three bugs! Use your tests to determine the
- * source of the bugs and correct them!
- *
- * @author Alex Lockwood
- * @author Ye Lu
- */
 public class ArrayIntQueue implements IntQueue {
+   private int[] elementData;
+   private int head;
+   private int size;
+   private static final int INITIAL_SIZE = 10;
 
-    /**
-     * An array holding this queue's data
-     */
-    private int[] elementData;
+   public ArrayIntQueue() {
+      this.elementData = new int[INITIAL_SIZE];
+      this.head = 0;
+      this.size = 0;
+   }
 
-    /**
-     * Index of the next dequeue-able value
-     */
-    private int head;
+   public void clear() {
+    Arrays.fill(this.elementData, 0);  
+    this.size = 0;                     
+    this.head = 0;                     
+}
 
-    /**
-     * Current size of queue
-     */
-    private int size;
+   public Integer dequeue() {
+      if (this.isEmpty()) {
+         return null;
+      } else {
+         Integer value = this.elementData[this.head];
+         this.head = (this.head + 1) % this.elementData.length;
+         --this.size;
+         return value;
+      }
+   }
 
-    /**
-     * The initial size for new instances of ArrayQueue
-     */
-    private static final int INITIAL_SIZE = 10;
+   public boolean enqueue(Integer value) {
+      ensureCapacity();
+      int tail = (this.head + this.size) % this.elementData.length;
+      this.elementData[tail] = value;
+      ++this.size;
+      return true;
+   }
 
-    /**
-     * Constructs an empty queue with an initial capacity of ten.
-     */
-    public ArrayIntQueue() {
-        elementData = new int[INITIAL_SIZE];
-        head = 0;
-        size = 0;
-    }
+   public boolean isEmpty() {
+      return this.size == 0; // Fixed: Changed from `size >= 0` to `size == 0`
+   }
 
-    /** {@inheritDoc} */
-    public void clear() {
-        Arrays.fill(elementData, 0);
-        size = 0;
-        head = 0;
-    }
+   public Integer peek() {
+      if (this.isEmpty()) {
+         return null; // Fixed: Avoid accessing an empty queue
+      }
+      return this.elementData[this.head];
+   }
 
-    /** {@inheritDoc} */
-    public Integer dequeue() {
-        if (isEmpty()) {
-            return null;
-        }
-        Integer value = elementData[head];
-        head = (head + 1) % elementData.length;
-        size--;
-        return value;
-    }
+   public int size() {
+      return this.size;
+   }
 
-    /** {@inheritDoc} */
-    public boolean enqueue(Integer value) {
-        ensureCapacity();
-        int tail = (head + size) % elementData.length;
-        elementData[tail] = value;
-        size++;
-        return true;
-    }
+   private void ensureCapacity() {
+      if (this.size == this.elementData.length) {
+         int oldCapacity = this.elementData.length;
+         int newCapacity = 2 * oldCapacity + 1;
+         int[] newData = new int[newCapacity];
 
-    /** {@inheritDoc} */
-    public boolean isEmpty() {
-        return size >= 0;
-    }
+         for (int i = 0; i < this.size; i++) {
+            newData[i] = this.elementData[(this.head + i) % oldCapacity];
+         }
 
-    /** {@inheritDoc} */
-    public Integer peek() {
-        return elementData[head];
-    }
-
-    /** {@inheritDoc} */
-    public int size() {
-        return size;
-    }
-
-    /**
-     * Increases the capacity of this <tt>ArrayIntQueue</tt> instance, if
-     * necessary, to ensure that it can hold at least size + 1 elements.
-     */
-    private void ensureCapacity() {
-        if (size == elementData.length) {
-            int oldCapacity = elementData.length;
-            int newCapacity = 2 * oldCapacity + 1;
-            int[] newData = new int[newCapacity];
-            for (int i = head; i < oldCapacity; i++) {
-                newData[i - head] = elementData[i];
-            }
-            for (int i = 0; i < head; i++) {
-                newData[head - i] = elementData[i];
-            }
-            elementData = newData;
-            head = 0;
-        }
-    }
+         this.elementData = newData;
+         this.head = 0;
+      }
+   }
 }
