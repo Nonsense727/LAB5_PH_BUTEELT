@@ -2,70 +2,116 @@ package edu.cmu.cs.cs214.rec02;
 
 import java.util.Arrays;
 
+/**
+ * A resizable-array implementation of the {@link IntQueue} interface. The head of
+ * the queue starts out at the head of the array, allowing the queue to grow and
+ * shrink in constant time.
+ * TODO: This implementation contains three bugs! Use your tests to determine the
+ * source of the bugs and correct them!
+ *
+ * @author Alex Lockwood
+ * @author Ye Lu
+ */
 public class ArrayIntQueue implements IntQueue {
-   private int[] elementData;
-   private int head;
-   private int size;
-   private static final int INITIAL_SIZE = 10;
 
-   public ArrayIntQueue() {
-      this.elementData = new int[INITIAL_SIZE];
-      this.head = 0;
-      this.size = 0;
-   }
+  /**
+  * An array holding this queue's data.
+  */
 
-   public void clear() {
-    Arrays.fill(this.elementData, 0);  
-    this.size = 0;                     
-    this.head = 0;                     
-}
+  private int[] elementData;
 
-   public Integer dequeue() {
-      if (this.isEmpty()) {
-         return null;
-      } else {
-         Integer value = this.elementData[this.head];
-         this.head = (this.head + 1) % this.elementData.length;
-         --this.size;
-         return value;
+  /**
+   * Index of the next dequeue-able value.
+  */
+  private int head;
+
+  /**
+   * Current size of queue.
+   */
+  private int size;
+
+  /**
+  * The initial size for new instances of ArrayQueue.
+   */
+  private static final int INITIAL_SIZE = 10;
+
+  /**
+   * Constructs an empty queue with an initial capacity of ten.
+   */
+  public ArrayIntQueue() {
+    elementData = new int[INITIAL_SIZE];
+    head = 0;
+    size = 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void clear() {
+    Arrays.fill(elementData, 0);
+    size = 0;
+    head = 0;
+  }
+  
+  /** {@inheritDoc} */
+  @Override
+  public Integer dequeue() {
+    if (isEmpty()) {
+      return null;
+    }
+    Integer value = elementData[head];
+    head = (head + 1) % elementData.length;
+    size--;
+    return value;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean enqueue(Integer value) {
+    ensureCapacity();
+    int tail = (head + size) % elementData.length;
+    elementData[tail] = value;
+    size++;
+    return true;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isEmpty() {
+    return size == 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Integer peek() {
+    if (isEmpty()) {
+      return null;
+    }
+    return elementData[head];
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int size() {
+    return size;
+  }
+
+  /**
+   * Increases the capacity of this <tt>ArrayIntQueue</tt> instance, if
+   * necessary, to ensure that it can hold at least size + 1 elements.
+   */
+  private void ensureCapacity() {
+    if (size == elementData.length) {
+      int oldCapacity = elementData.length;
+      int newCapacity = 2 * oldCapacity + 1;
+      int[] newData = new int[newCapacity];
+      for (int i = head; i < oldCapacity; i++) {
+        newData[i - head] = elementData[i];
       }
-   }
-
-   public boolean enqueue(Integer value) {
-      ensureCapacity();
-      int tail = (this.head + this.size) % this.elementData.length;
-      this.elementData[tail] = value;
-      ++this.size;
-      return true;
-   }
-
-   public boolean isEmpty() {
-      return this.size == 0; // Fixed: Changed from `size >= 0` to `size == 0`
-   }
-
-   public Integer peek() {
-      if (this.isEmpty()) {
-         return null; // Fixed: Avoid accessing an empty queue
+      for (int i = 0; i < head; i++) {
+        newData[oldCapacity - head + i] = elementData[i];
       }
-      return this.elementData[this.head];
-   }
-
-   public int size() {
-      return this.size;
-   }
-
-   private void ensureCapacity() {
-      if (this.size == this.elementData.length) {
-         int oldCapacity = this.elementData.length;
-         int newCapacity = 2 * oldCapacity + 1;
-         int[] newData = new int[newCapacity];
-
-         for (int i = 0; i < this.size; i++) {
-            newData[i] = this.elementData[(this.head + i) % oldCapacity];
-         }
-
-         this.elementData = newData;
-         this.head = 0;
-      }
-   }
+      elementData = newData;
+      head = 0;
+    }
+  }
 }
